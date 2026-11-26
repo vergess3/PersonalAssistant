@@ -1,0 +1,30 @@
+{
+  "checkedDate": "2026-11-04",
+  "scope": "Capability inspection only; no file upload, download, forwarding, credential expansion or live listener started",
+  "destination": "D0CEB1J8G07",
+  "weixin": {
+    "source": "https://github.com/Tencent/openclaw-weixin/blob/main/docs/protocol.md",
+    "messageItemTypes": {"image": 2, "voice": 3, "file": 4, "video": 5},
+    "upload": "getuploadurl -> encrypted CDN POST -> sendmessage with original conversation context",
+    "upstreamInboundClientLimitBytes": 104857600,
+    "limitSource": "https://github.com/Tencent/openclaw-weixin/blob/main/src/media/media-download.ts",
+    "serverUploadLimitVerified": false,
+    "allFormatsGuaranteed": false
+  },
+  "slackConnector": {
+    "discoveryTransport": "Local Codex App Server mcpServerStatus/list, existing codex_apps server",
+    "availableTools": ["slack.slack_get_file_upload_url", "slack.slack_complete_file_upload", "slack.slack_read_file"],
+    "readFileAdvertisedLimit": "10MB",
+    "uploadLimit": "Workspace-dependent; no numeric maximum in connector schema",
+    "slackProductGeneralLimit": "1GB per file; not a verified end-to-end bridge limit",
+    "productLimitSource": "https://slack.com/help/articles/201330736-Add-files-to-Slack",
+    "fileDownloadTransportProven": false,
+    "fileUploadAndAssistantTriggerProven": false
+  },
+  "remaining": [
+    "Implement and validate media decrypt/encrypt, bounded downloads and safe local file handling",
+    "Validate connector binary file-reference retrieval using an explicitly approved non-sensitive test file",
+    "Map generated output files only to their verified WeChat-origin request, not unrelated Slack files or arbitrary URLs",
+    "Review each concrete file and obtain required specific consent before any sharing, especially sensitive data"
+  ]
+}

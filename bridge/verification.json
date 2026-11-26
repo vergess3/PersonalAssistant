@@ -1,0 +1,23 @@
+{
+  "date": "2026-11-04",
+  "state": "awaiting-user-authentication",
+  "tests": {
+    "command": "node --test",
+    "passed": 19,
+    "failed": 0,
+    "includesWindowsDPAPI": true
+  },
+  "handoff": {
+    "slack": "https://slack.com/signin#/signin",
+    "browserId": "3",
+    "slackTabId": "256911118",
+    "localSetup": "http://127.0.0.1:37641/",
+    "setupTabId": "256911122",
+    "setupProcessId": 16736,
+    "weixinQR": "generated; status wait; expires after about five minutes; generate a new code on the same local page"
+  },
+  "createdOAuthGrants": 0,
+  "credentialsSaved": false,
+  "realRoundTripVerified": false,
+  "persistentServiceConfigured": false
+}

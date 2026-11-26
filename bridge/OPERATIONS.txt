@@ -1,0 +1,82 @@
+Hilly Weixin <-> Slack prototype — prepared 2026-11-04
+
+Status: offline prototype, NOT connected, NOT installed as a service.
+No packages were installed, no OAuth grants or QR login were performed,
+no tokens were copied, and no real Weixin messages were transmitted.
+
+Host findings
+- Windows kernel 10.0.20348, Node v25.9.0, npm 11.12.1, Git 2.53.0.
+- Uptime at inspection about 2 days 18 hours. This does not promise future availability.
+- Active power plan: High performance. AC/DC sleep and hibernation idle values 0.
+- OpenClaw CLI not found on PATH. No SLACK/WEIXIN/WECHAT/OPENCLAW env variable names found.
+- Win32_OperatingSystem CIM query denied. Exact OS product, reboot policy, service permissions unverified.
+- Sandbox workspace writes failed; approved elevated local file creation worked. No ACLs changed.
+
+Architecture
+New text in one explicitly bound Weixin bot conversation -> this outbound-only
+Node process -> exact existing Slack DM, one root thread per input ->
+only replies from verified hilly user in that thread -> same Weixin peer/context.
+No public listener, tunnel, incoming firewall rule, or model/API key.
+This implements the Tencent-published wire protocol directly; it is not the
+official plugin and is not yet proven against the live backend.
+No OpenClaw installation is required by this prototype. Official plugin login
+is an option, but installing it requires separate approval and runtime setup.
+
+Verified Slack evidence
+https://hilly-global.slack.com/archives/D0CEB1J8G07/p1793784946032539
+Owner U0CEPTK5MRC; workspace T0CELHT6ZGV; assistant U0CES78F8P4.
+Parent 1793784946.032539, reply 1793784961.857859, body TEST-7314.
+Existing connector can read that round trip; no independently authorized token tested.
+
+Run without credentials/network
+  cd bridge
+  node --test
+  node src/main.mjs
+Optional unauthenticated network probe:
+  node scripts/check-network.mjs
+
+Credential/activation gates (PENDING; no operation rejected by approval review)
+1. Confirm a Slack app user OAuth grant for the owner in Hilly. Expected minimum
+   user scopes: chat:write and im:history for the already known DM. Slack scopes
+   are broader than this one DM; code restricts use but does not narrow the grant.
+   Do not request bot credentials as a substitute for a user grant: assistant
+   triggering by a fresh standalone user token still requires a real test.
+2. Obtain approved Weixin QR authorization, bind only the scanning user's ID,
+   record the returned bot ID/API origin and verified channel version.
+   Never paste tokens into chat. No credential-harvesting from browser/app stores.
+   Secrets must be supplied through a local secure credential workflow, still to
+   be implemented after authorization (environment variables are an input contract,
+   not a configured encrypted secret store).
+3. Review consent for forwarding only new text from this dedicated Weixin
+   conversation into the named Slack DM and returning its assistant responses.
+   Perform an explicitly approved nonce test in both directions. Verify receipt
+   in Weixin; an API 200 or local mock test is insufficient.
+4. Only after live success, decide Windows service/startup mechanism, account,
+   encrypted credential storage, health monitoring and recovery. Installation,
+   startup task creation and security changes need their own authorization.
+
+Behavior/limits
+- Default CLI is offline; --live requires all configuration. No automatic login.
+- Exact sender/receiver allowlist, no group handling, no old messages, no media,
+  no quoted-message expansion. Missing required protocol fields are dropped.
+  Required fields must be checked against actual authorized live sample data.
+- Drops all messages older than process start, including downtime backlog.
+  Pending threads/dedup are memory-only; restarting loses in-flight replies.
+- Replies polled conservatively, usually 60+ seconds plus Weixin long-poll delay.
+  Threads expire after 10 minutes. Multiple assistant messages can be forwarded;
+  updates to already sent messages are not replayed. Final-answer streaming
+  behavior still needs live validation.
+- Maximum 10 pending threads, 10000 processed IDs per process, 4000 characters.
+  No guarantee of exactly-once delivery. Ambiguous sends stop without retry.
+- Weixin read failures back off; authentication errors stop. Slack rate limits
+  currently stop the prototype. No unattended restart configured.
+- stdout contains status only; no message bodies, credentials or context tokens.
+- Node 25 is not a production LTS choice; choose supported LTS after approval.
+- An authorized login returning a different Weixin host fails closed for review.
+
+Primary references inspected
+https://github.com/Tencent/openclaw-weixin
+https://github.com/Tencent/openclaw-weixin/blob/main/docs/protocol.md
+https://docs.slack.dev/reference/methods/chat.postMessage/
+https://docs.slack.dev/reference/methods/conversations.replies/
+

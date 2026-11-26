@@ -1,0 +1,17 @@
+# Secrets and local environment
+.env*
+!.env.example
+*.secret*
+*.dpapi
+*.lock
+
+# Runtime state, logs, and temporary files
+state/
+logs/
+*.log
+*.tmp
+
+# Dependencies and OS files
+node_modules/
+.DS_Store
+Thumbs.db

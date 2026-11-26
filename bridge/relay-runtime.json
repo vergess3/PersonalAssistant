@@ -1,0 +1,17 @@
+{
+  "receiveLoopEnabled": true,
+  "forwardingEnabled": true,
+  "replyPolicy": "User decision 2026-11-08: preserve WeChat native quotes and resolve them to the original Slack thread, including quoted assistant replies. Compare the outgoing Slack thread topic with the last visible WeChat message topic; add a native ref_msg only when returning to a different topic. Consecutive user, acknowledgement and assistant messages within one thread do not repeat quotes. Persist message IDs and reference text in the encrypted queue. Unresolved or ambiguous explicit quotes stay queued with a routing error rather than becoming unrelated root messages. Standalone unthreaded messages are not semantically classified. Older sent content may be read only to rebuild references, never replayed.",
+  "contentPolicy": "Native forwarding, no review (user decision): bound user's new WeChat text/files go to the fixed Slack DM as-is; the assistant's new Slack text/files return immediately using the latest WeChat context token. Slack display blocks render to readable WeChat plain text, preserving paragraphs/list items and placing labelled link URLs in numbered references at the end; text-only messages use a Slack-markup fallback. Explicit WeChat rejections requeue. WeChat-origin document/image/video-only messages stay staged until a text or voice message arrives. Pending attachments join that message as one durable task, preserving original IDs for deduplication and quotes. A voice without a transcript also releases pending attachments. The instruction accompanies the final file share; the connector supports one attachment per share, so multiple attachments still require sequential shares. Explicitly quoted attachments only join an instruction carrying the same quote. File fallback requires actual binary bytes. No history or third-party messages. User-requested exception: Hilly thumbs-up reactions (+1/thumbsup, including skin-tone variants) on newly relayed WeChat messages forward once as \ud83d\udc4d; other Hilly emoji reactions generate one durable waiting acknowledgement: \u7a0d\u7b49. Historical reactions are not backfilled; a full reply already collected suppresses a late waiting acknowledgement (\u7a0d\u7b49) but not a thumbs-up (\ud83d\udc4d). Voice compatibility: detect actual audio bytes; convert WeChat SILK (including mislabeled SPX/encode_type=4) to mono 24 kHz 16-bit PCM WAV locally before Slack upload, preserving the protocol transcript. If audio conversion fails, send that transcript once and retain the audio for retry.",
+  "transport": "slack-mcp",
+  "network": {
+    "mode": "physical-direct",
+    "interfaceIndex": 18,
+    "localAddress": "10.1.0.15",
+    "dnsServers": [
+      "183.60.83.19",
+      "183.60.82.98"
+    ],
+    "pythonPath": "C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe"
+  }
+}

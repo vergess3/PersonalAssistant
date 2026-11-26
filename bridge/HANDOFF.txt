@@ -1,0 +1,129 @@
+Current status (supersedes OPERATIONS.txt), 2026-11-04
+
+Weixin authorization confirmed 10:27:27 UTC; saved with Windows DPAPI CurrentUser.
+Slack Hilly Weixin Bridge A0CEMNN3T53 created and installed. User scopes chat:write
+and im:history; Slack automatically included identify. Exact user/workspace validated.
+Both credentials remain in state/credentials.dpapi; never print or export them.
+
+Bridge process 11456 is stopped and confirmed absent. Queue remains encrypted in
+state/queue.dpapi. Setup UI was last running on loopback 127.0.0.1:37641, PID 6828.
+No public listener, installation, Windows service or startup task was created.
+Latest instruction: no new test messages, credentials, external changes, or attempts
+to disguise application-origin messages as human messages. Do not resume live mode.
+
+End-to-end bridge NOT verified. One standalone synthetic Slack message was sent:
+https://hilly-global.slack.com/archives/D0CEB1J8G07/p1793789274377889
+It had app/bot origin and no assistant reply at last check. Original connector test
+received a reply and had no bot_id. This is correlation, not proof of an internal
+filter. A proposed extra legacy as_user test was denied before execution by auto
+review because it was an additional unapproved external message; never retried.
+It is now cancelled under the latest instruction.
+
+Official integration research:
+https://learn.chatgpt.com/docs/dots/channels
+Documents the same dot across ChatGPT, Slack and Teams. No documented external
+programmatic input/output for this existing dot was found in the consulted pages.
+
+https://learn.chatgpt.com/workspace-agents/trigger-runs
+POST trigger for a published workspace agent supports conversation_key and
+Idempotency-Key. Beta status polling exists, but answer content cannot currently be
+retrieved via this API. No evidence that this personal Hilly dot is such a published
+agent. This endpoint alone cannot implement the required bidirectional bridge.
+https://learn.chatgpt.com/workspace-agents/authentication
+Requires separately scoped Workspace Agent access token and admin feature controls.
+No token created, admin changes made, or trigger called.
+
+https://learn.chatgpt.com/api/docs/guides/agents-api/overview
+Documented custom-agent option with durable sessions and streamed events; would be
+a separately configured agent, not automatic access to existing Hilly memory/tools.
+https://github.com/Tencent/openclaw-weixin
+Tencent's supported channel connects OpenClaw Gateway to Weixin using QR login.
+Could serve a separately configured assistant; requires installation/provider setup
+and compatibility checks. Neither option has been installed or activated.
+
+19 local tests passed earlier, including DPAPI encryption, atomic checkpoints,
+restart recovery, new-message boundary, identity binding and instance lock.
+Live main.mjs uses durable.mjs; core.mjs remains for prototype tests only.
+Offline messages are recoverable only if retained by Weixin backend. Ambiguous
+external sends pause for review; exactly-once delivery is not claimed. Streaming
+reply behavior, capacity, automatic restart and sustained operation remain unproven.
+
+Next decision: retain existing Hilly through an officially supported contact, or
+explicitly choose a separate API/OpenClaw-backed Weixin assistant. For the exact
+existing Hilly bridge, a supported dot integration entrypoint must first be confirmed.
+
+2026-11-04 repair follow-up:
+Read-only diagnosis using the bridge's own encrypted Slack token verified exact
+identity and successfully fetched the earlier TEST-7314 reply. It also fetched the
+complete BRIDGE-4826 thread, which still contained only its parent. This rules out
+a missing im:history grant or a missed-thread reader as the observed failure.
+The remaining boundary is Slack-to-Hilly triggering/handling. The precise internal
+cause is not observable from this app's permissions; source/origin is a correlation.
+Slack documents that DM messages never dispatch app_mention, even with explicit
+mentions, so adding an @mention in this DM is not a supported alternate trigger:
+https://docs.slack.dev/reference/events/app_mention/
+
+Implemented src/readiness.mjs and startup gate in src/main.mjs. Live startup checks
+that the existing standalone Slack test received the expected completed assistant
+reply before creating a queue consumer or forwarding any Weixin text. An accepted
+Slack post alone cannot produce a misleading active state. This check verifies only
+Slack readiness, not a complete Weixin round trip. Four new regression tests pass;
+all 23 local tests pass. Read-only live readiness check remains unverified/paused.
+No further test message, credential, grant, installation or service was created.
+
+Required next evidence for exact Hilly bridge: Hilly platform/operator confirmation
+of a supported app-origin DM ingress for app A0CEMNN3T53, plus event delivery/handler
+logs for channel D0CEB1J8G07 ts 1793789274.377889. We cannot inspect or change Hilly's
+server-side event subscriptions or origin policy with the bridge's current token.
+Do not remove origin attribution, emulate human UI sends, or try legacy as_user.
+A different API/OpenClaw assistant is a product change requiring a separate decision.
+
+2026-11-04T11:28:00Z approved threaded diagnostic result:
+Following explicit new user approval, the previously denied operation was retried
+once after confirming it had not executed. One synthetic BRIDGE-THREAD-4938 message
+was posted at 11:26:48 UTC to original thread 1793789274.377889 in D0CEB1J8G07.
+Diagnostic ts: 1793791608.542209. Genuine app A0CEMNN3T53 and bot B0CELRL40R1 preserved.
+No Weixin content was sent. Full-thread checks through 11:28:00 UTC show exactly one
+reply: the diagnostic itself, authored by the owner through the bridge app. No Hilly
+reply observed. Thread context alone has not resolved the failure in this test.
+This does not establish the exact server-side cause or preclude a later response.
+Bridge remains paused; credentials and queue preserved. Do not duplicate the test.
+
+2026-11-04 official connector reuse investigation:
+A supported local route has now been verified READ-ONLY. Installed codex-cli
+0.155.0-alpha.16 app-server reports a ChatGPT account and Slack app
+asdk_app_69a1d78e929881919bba0dbda1f6436d enabled=true, callable=true.
+Using initialize -> initialized -> ephemeral thread/start (read-only sandbox,
+no turn/start) -> mcpServerStatus/list discovered server codex_apps and tool
+slack.slack_read_thread. mcpServer/tool/call successfully read exact thread
+1793784946.032539 in D0CEB1J8G07; TEST-7314 and assistant U0CES78F8P4 were present.
+No hidden credential read/export, additional login, credential creation, Slack write
+or model turn occurred. Diagnostic app-server subprocesses exited after probes.
+
+This is a concrete candidate for reusing the authorized connector from the standalone
+bridge via official App Server RPC, instead of independently issued Slack Web API
+authorization. It is not proof that connector send calls in this local context have
+the same message metadata or trigger Hilly. Next implementation should discover the
+send tool, allowlist only fixed-target send and exact-thread reads, keep encrypted
+receipts/idempotency handling, and surface runtime approval/reconnection requests.
+Never auto-accept an approval or remove access controls. Verify one separately
+approved synthetic send plus Hilly reply before enabling Weixin traffic.
+Bridge remains paused and unchanged. Metadata evidence is saved in
+connector-reuse-investigation.json; CLI protocol schemas are in app-server-schema.
+Official reference: https://learn.chatgpt.com/docs/app-server
+
+Connector reuse applicability clarification (supersedes prior next-implementation suggestion):
+Official App Server documents custom clients and mcpServer/tool/call; the read-only
+probe proves tool transport and existing connection access. It does NOT prove that
+an independent Weixin relay into an existing dot is an explicitly supported use,
+or that the receiving dot would receive/validate the original external requester.
+The currently exposed Slack send schema accepts message/channel/thread options but
+has no documented external-source/requester attestation parameter or authorization
+preflight/dry-run. An arbitrary _meta field is not evidence of such support. A body
+label is informative but cannot be assumed to preserve receiver origin checks.
+No connector write or write-authorization probe was made. No original credentials
+were inspected, exported or reused outside their managed runtime. Keep the bridge
+paused. Do not replace the transport simply to change how Hilly sees its origin.
+Required next evidence: official OpenAI/connector support for this exact independent
+external-message relay and supported source/requester representation, including the
+receiving dot's acceptance policy. Only then prepare a labeled synthetic diagnostic.

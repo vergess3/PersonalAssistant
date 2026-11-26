@@ -1,0 +1,695 @@
+2026-11-26 06:14 Beijing - Hilly thumbs-up reactions now forward as "👍" instead of "稍等".
+Slack's live thumbs-up reaction on 1795644135.426899 was verified read-only as name="+1".
+Previously collectReactions mapped every assistant reaction to "稍等", making a standalone
+thumbs-up look like a waiting notice in WeChat. src/relay.mjs now distinguishes thumbs-up
+reactions (+1 / thumbsup, including ::skin-tone-* variants) as kind="thumbsup_ack" sending
+"👍", separate from waiting acknowledgements (eyes_ack -> "稍等"). Eyes followed by +1 across
+polls sends "稍等" then "👍"; simultaneous eyes + +1 sends only "👍"; a full reply suppresses
+stale "稍等" but does not suppress "👍". Interleaved topics retain native WeChat quotes.
+A separate thumbsupActiveFrom boundary prevents replaying historical +1 reactions on upgrade.
+relay-loop.mjs exposes thumbsupAcknowledgements / sentThumbsupAcknowledgements in status/health.
+All 111 offline tests passed (4 new thumbs-up regression suites). Graceful restart replaced
+PID 29784 with PID 12596; all 907 requests and 1373 outbox entries preserved, zero historical
+replay, zero pending/uncertain items. Backups under state/thumbsup-backup-20261126/.
+No synthetic messages were sent; next live thumbs-up awaits normal use.
+
+2026-11-14 05:44 Beijing - RECOVERED: replies in a revived old thread were missed.
+WeChat request 7527118534502156680 at 05:21:45 Beijing reached Slack as
+1794604907.035519 in the explicitly quoted root 1794526268.314639. Hilly
+replied at 05:22:02, 05:22:25 and 05:23:31, but none was in the local outbox.
+The parent was outside the main-history overlap. The one-root historical
+rotation had 165 known topics and did not prioritize the recent follow-up;
+normal process/receive/poll heartbeats therefore concealed missing replies.
+
+src/relay-loop.mjs now derives activity from the latest inbound/share time,
+checks up to three active topics per poll for one hour, prioritizes activity
+since the last read, and retains a separate rotating historical slot. Topics
+deduplicate and simultaneous active topics rotate fairly. Original activation
+boundaries, watermark overlap, exact-ts dedup and routing remain intact.
+Three regression tests failed against the old code and pass with the repair;
+the full offline suite passes 105 tests.
+
+Graceful scheduled-task restart replaced PID 10228 with PID 16980. Its normal
+poll collected the three original replies at 05:43:40. Positive WeChat
+message-ID receipts verified all three sent at 05:43:42 / :44 / :45 Beijing.
+Original request records and previously sent timestamps/receipts are unchanged.
+No synthetic messages or manual retransmissions were sent. Handset rendering
+has not been observed. Metadata evidence and encrypted backups are under
+state/thread-polling-incident-20261114/. This was a polling scheduling defect;
+the file authorization recovery below remains valid.
+
+2026-11-14 05:14:10 Beijing - RECOVERED: file grant and all six deferred tasks verified.
+Owner saved the expanded User OAuth Token at 05:08:37 Beijing. Actual Slack
+grant includes files:read/files:write; read-only MCP preflight and live worker
+both expose file upload/read tools. Setup successfully saved the token.
+Existing relay PID 10228 independently reconnected with expanded scopes and
+automatically retried the durable queue, so no relay restart or replay was
+needed. All six previously deferred media tasks are posted with exact Slack
+file IDs, Hilly thread replies, and positive WeChat server message-ID receipts.
+This includes the original 12:52 DOCX itinerary, its complete route/time reply,
+three voice tasks, the later DOCX task, and one image task.
+Pending requests/replies and uncertain outcomes are zero. Receive has zero
+timeouts. No synthetic messages or manual retransmissions were sent.
+The grant is RESOLVED; do not repeat the prior missing-scope/reinstall steps.
+Historical notes below describe the pre-recovery state.
+Evidence: state/setup-feedback-fix-20261114/recovery-success.json.
+
+2026-11-14 04:31:41 Beijing - User confirmed scope screenshot is Hilly Weixin Bridge.
+Screenshot includes files:read/files:write under USER scopes and many other
+user scopes. Configuration is correct; latest submitted grant at 04:25:19
+still returned only identify, im:history, chat:write and was not saved.
+Do not call the user's copied token old or assume wrong bot scopes.
+Removed the separate over-strict rejection of additional existing scopes.
+Validation now requires minimum scopes while retaining owner/team/bot checks.
+Does not request or grant permissions; fixed-DM forwarding is unchanged.
+Six targeted tests passed, including broad scope acceptance and identity/
+missing-scope rejection. Setup restarted to PID 3128. Ciphertext of
+credentials remains unchanged; relay was not restarted. Browser unavailable.
+Owner should complete Slack Reinstall to Workspace + Allow in the same app,
+refresh local setup and submit the User OAuth Token. Then verify saved grant,
+MCP file tools, gracefully reload relay, and verify original-task receipts.
+Evidence: state/setup-feedback-fix-20261114/minimum-scope-check.json.
+
+2026-11-14 04:24:19 Beijing - Setup save feedback repaired; grant remains incomplete.
+User clicked save; authorization-diagnostic.json changed at 04:19:48 Beijing
+while credentials.dpapi remained unchanged. Submitted grant still returned
+identify, im:history, chat:write, missing files:read/files:write. Online
+read-only MCP preflight likewise exposes no file tools.
+Added immediate inline pending/success/error feedback, disabled duplicate
+submits, bounded network wait, stale-page refresh guidance and explicit
+missing-scope messages. Legacy saved credentials no longer show file scopes
+as verified. Validation helper records scope/time/result metadata only;
+rejected grants cannot replace the working token or WeChat binding.
+Five targeted authorization/form tests passed; setup syntax check passed.
+Restarted ONLY setup to PID 31028; relay remains PID 10228.
+Credential ciphertext hash is unchanged. There are 6 queued tasks.
+Browser host remains unavailable; no native or alternate UI fallback used.
+Owner must refresh the setup page, add scopes under USER scopes and complete
+Slack reinstall authorization, then copy the updated xoxp User OAuth Token
+into local setup. After save succeeds, verify MCP file capabilities and
+restart relay gracefully to load the token, then verify original task receipts.
+Evidence: state/setup-feedback-fix-20261114/verification.json.
+
+2026-11-13 04:58 Beijing - Screenshot Word task blocked by unchanged Slack file grant.
+Matched the screenshot's 12:52 handset DOCX and instruction to queue records
+7526627884266640904 / 7526627974020577032. The file is bundled into the
+instruction, which remains queued at upload_init with
+connector_file_permission_required. Older voice 7526608161546063752 has the
+same prerequisite. No upload/share checkpoints exist for either task.
+Live read-only mcp-preflight again returned identify, im:history, chat:write;
+fileUploadAvailable=false, fileReadAvailable=false, fileTools=[]. Receiver
+continues successful responses with zero timeouts. No replay, synthetic
+message, production change or credential readout was performed.
+UI inventory returned browser access host unavailable; stopped browser work,
+with no native Chrome fallback. Existing secure local setup on 127.0.0.1:37641
+is still listening. Owner needs User Token Scopes files:read/files:write,
+reinstall authorization, and replacement token saved only in local setup.
+Then re-run preflight; if token changed restart gracefully and let the
+durable queue deliver original pending tasks. Do not claim recovery before
+file capabilities and original-task receipts have been verified.
+Evidence: state/file-permission-incident-20261113/verification.json.
+
+2026-11-12 19:44 Beijing - Voice blocked by outstanding Slack file grant.
+Read-only live MCP preflight confirms stored token scopes remain identify,
+im:history, chat:write; no file tools are exposed. The 11:33 handset voice
+(19:33 Beijing / 11:33 UTC), ID 7526608161546063752, is safely queued with
+connector_file_permission_required at upload_init. No upload/share attempted.
+The later 11:39 handset text was posted; its reply has a WeChat message-ID
+receipt. Receive remains healthy, no timeout. This is the same incomplete
+file authorization prerequisite from the migration, not a new receive outage.
+User asked whether they have completed the scopes/reinstall. Browser host
+is unavailable, so no Slack UI authorization was performed. Local setup
+server prepared at http://127.0.0.1:37641 for replacement user token if needed.
+Never ask for tokens in chat. After authorization, re-run mcp-preflight and,
+if token changed, restart worker gracefully. Let the durable queue retry; do
+not send synthetic messages or manually replay this original voice.
+Metadata evidence: state/voice-permission-20261112/verification.json.
+
+2026-11-12 17:01 Beijing - Production migrated to Slack MCP; file grant pending.
+User explicitly requested replacing the old ChatGPT path and removing it.
+src/connector.mjs now implements SlackMcpConnector using the bridge's own OAuth
+token directly against https://mcp.slack.com/mcp. No Codex process, App Server,
+ChatGPT account, model call, managed credential or ChatGPT file fallback remains
+in active source/scripts/config. Obsolete GPT diagnostic scripts were removed
+from active scripts; their historical versions remain in the migration backup.
+
+All production HTTP (WeChat receive/send/CDN, Slack history/files, MCP) uses the
+new concurrent src/direct-http.py worker through src/direct-http.mjs. DNS/TLS
+sockets explicitly select physical interface 18 / 10.1.0.15 and DNS servers
+183.60.83.19 / 183.60.82.98, bypassing local system proxy and TUN. TLS verification
+and destination restrictions remain enabled; no global network setting changed.
+Update relay-runtime.json if the server's physical NIC/address/DNS changes.
+Credentials and bodies travel only through anonymous process pipes and HTTPS;
+raw connector diagnostics remain encrypted. Reads and sends run independently.
+
+Original upload checkpoints, voice conversion, native quotes, durable queue,
+reply formatting, reaction acknowledgements and backoff are preserved. MCP
+session/transport errors reconnect between operations. Unknown writes are never
+replayed. Explicit pre-dispatch share rejection restores the uploaded checkpoint;
+missing file tools are retryable and refresh on a later connector connection.
+File downloads now use Slack files.info + authorized original bytes directly.
+
+Validation: full suite passed 95 tests; one additional authorization-refresh
+regression subsequently passed with the 7-test recovery suite (96 tests total).
+Production-client direct preflight validated exact owner/workspace, historical
+reply access, MCP initialization and send tool. A fresh text diagnostic received
+Hilly's exact marker and was returned to WeChat. Post-cutover quoted-thread test
+receipt is retained in the migration smoke report for separate verification.
+
+Old worker 25784 / launcher 27732 stopped gracefully. Existing scheduled task
+started worker 10228, with only the direct HTTP Python child 12380. Health shows
+real successful WeChat responses, zero receive timeouts, successful Slack polls,
+network=physical-direct and transport=slack-mcp. Connector creation is lazy when
+no outgoing job exists; ready=false alone is not a failure in an idle queue.
+All 208 requests and 315 pre-cutover outbox records, bindings, activation/reaction
+boundaries and existing sent receipts were preserved exactly. No pending or
+uncertain jobs existed at cutover; no upload checkpoints needed migration.
+
+REMAINING EXTERNAL PREREQUISITE: existing token still grants only identify,
+im:history, chat:write. User has been asked to add USER scopes files:read and
+files:write to Hilly Weixin Bridge and reinstall. Do not claim media live-tested:
+image/voice/file jobs remain durable and deferred until authorization succeeds;
+there is NO GPT fallback. Updated local setup accepts exactly those four scopes
+plus identify and can securely save a replacement User OAuth token if needed.
+Do not request tokens in chat. No setup server is currently running.
+After the user completes authorization: run scripts/mcp-preflight.mjs. If the
+stored token still lacks scopes, start src/setup.mjs hidden and have the owner
+save the app's updated user token locally, then restart the worker gracefully.
+Run scripts/mcp-migration-check.mjs files ONCE after confirming capabilities;
+it tests synthetic PNG/WAV uploads, quoted thread sharing, byte-exact downloads,
+and then verify checks Hilly replies and WeChat return receipts. Check the smoke
+report before every write; never replay an ambiguous or posted diagnostic.
+
+Backup/evidence: state/mcp-migration-20261112-163252/ contains previous source,
+tests, scripts and runtime, encrypted queue-before-cutover.dpapi, metadata-only
+queue-verification.json, smoke.json and encrypted diagnostics/thread data.
+
+2026-11-12 09:11 Beijing - Official Slack MCP text experiment PASSED.
+User enabled the bridge app's Slack MCP feature and said "ok". Reconnection
+using its existing owner OAuth token succeeded. The live MCP inventory exposes
+slack_send_message, slack_schedule_message, slack_send_message_draft under the
+current scopes. No new credentials or scope grants were requested by this run.
+
+MCP-20261112-8642: root 1794445508.832329, Hilly reply 1794445518.555889 (~10s).
+MCP-DIRECT-20261112-8642: root 1794445800.090599, Hilly reply 1794445809.475469
+(~9s). The latter's auth.test, MCP initialize/list/send AND reply reads used
+physical-interface DNS and TLS sockets (interface 18 / 10.1.0.15), bypassing
+local HTTP/SOCKS proxy and TUN. No ChatGPT/App Server/model request was used for
+either MCP send. No global proxy/network setting was changed.
+
+Both MCP roots retain owner user U0CEPTK5MRC and real bridge app A0CEMNN3T53,
+but have no bot_id. Ordinary Web API root 1794444447.105879 still has the same
+app plus bot_id B0CELRL40R1 and zero Hilly replies at 01:10:19 UTC. This supports
+the official MCP transport as a functioning text ingress; internal Hilly policy
+remains unobserved. Every synthetic test explicitly disclosed program sending.
+
+One physical-send attempt failed before network I/O because Python decoded the
+UTF-8 input pipe as GBK. Exact nested JSON reproduced JSONDecodeError at stdin
+parsing offline; complete Slack history had no matching marker. Fixed explicit
+UTF-8 decoding, archived that known pre-network failure, then sent once. Do not
+retry any posted diagnostic; all receipts and encrypted results are in
+state/slack-transport-experiment-20261112/. report.json includes physical-request
+metadata and exact-thread reply verification. Scripts passed syntax checks.
+
+This completes the requested TEXT transport experiment. Production still uses
+the existing connector; no deployment or migration was performed. Image/voice
+upload, file permissions, production routing without TUN, retry/recovery and
+sustained operation of a replacement adapter remain unimplemented/unverified.
+The existing direct Slack Web API history reader can be retained; MCP inventory
+currently does not expose history or file tools under the existing grants.
+
+2026-11-12 08:53 Beijing - User-authorized alternate Slack transport experiment.
+Production relay remains on the working managed connector; no source/runtime,
+proxy, route, permission or credential settings were changed by this experiment.
+Added standalone bounded diagnostics in scripts/slack-transport-experiment.mjs
+and scripts/probe-physical-egress.py. Evidence is under
+state/slack-transport-experiment-20261112/ (raw remote payloads are encrypted).
+
+Two explicit synthetic tests to the fixed Hilly DM used the same wording,
+including disclosure that a program sent them on the owner's authorization.
+- Direct Web API: DIRECT-20261112-8642, ts 1794444447.105879, posted by the
+  verified owner user through app A0CEMNN3T53, with bot_id B0CELRL40R1.
+  Complete-thread check at 00:51:10 UTC still found zero Hilly replies.
+- Existing managed connector: MANAGED-20261112-8642, ts 1794444512.095599,
+  owner user, app_id A097V82EGG2, no bot_id. Hilly reply 1794444521.371659
+  returned the requested marker about 9 seconds later. This is source metadata
+  correlation, NOT proof of Hilly's internal bot filter or AI text detection.
+Writes are guarded against repeat execution, including ambiguous outcomes.
+
+New candidate: Slack's own official MCP endpoint https://mcp.slack.com/mcp.
+The bridge's existing OAuth user token verified identify, im:history, chat:write.
+MCP initialize returned HTTP 400 / RPC -32600: app is not enabled for Slack MCP
+server access. This is an authorization/configuration prerequisite, not evidence
+that MCP messages do or do not trigger Hilly. No MCP message was sent.
+Official steps: https://docs.slack.dev/ai/slack-mcp-server/developing/ (Agents ->
+Slack Model Context Protocol (MCP) Server). Slack's own response linked to
+https://api.slack.com/apps/A0CEMNN3T53/app-assistant, but user got a not-found page.
+Asked user to enter https://api.slack.com/apps and confirm Hilly Weixin Bridge
+is visible before locating the toggle. Browser access host is unavailable;
+no alternate UI control, cookie extraction or hidden credential reuse attempted.
+After user enables the feature, run preflight to inspect the official tool schema,
+then mcp-send ONCE and verify. Do not switch production on successful post alone.
+
+Independent network proof: DNS and TLS sockets bound to physical interface 18,
+10.1.0.15, using Windows IP_UNICAST_IF and configured DNS 183.60.83.19. Slack
+api.test returned HTTP 200; mcp.slack.com returned HTTP 401 without credentials.
+TLS certificates verified. These probes avoided the local TUN/HTTP proxy, did
+not change OS routes or settings, and show direct endpoint reachability now.
+The earlier physical-egress.json attempt only timed out reaching Cloudflare DoH;
+it never reached either Slack endpoint. Use physical-egress-system-dns.json for
+the successful complete DNS+HTTPS measurements. No whole-proxy shutdown tested,
+and production's default host routing still includes TUN until separately changed.
+
+2026-11-12 08:14 Beijing - Proxy outage investigation; no code/network changes.
+User reported missing image/text and menu/voice tasks, then confirmed messages
+arrived after restoring their proxy. The WeChat receive lane stayed active:
+over 1,100 real API responses and zero receive timeouts since the prior repair.
+Both image bundles were durable; repeated connector initialization failed at
+account/read with RPC -32603, "workspace routing discovery failed" and request
+timeouts. Tasks remained safely queued and retried with capped backoff.
+
+Clash Verge's prior sidecar log ends at 02:56:07 Beijing. The current GUI and
+Mihomo core started at 08:04:56 / 08:05:00. Read-only controller inspection
+confirms WeChat and Slack history use DIRECT; ChatGPT/OpenAI use the proxy
+group. Thus a live WeChat receive process does not imply that the ChatGPT
+managed Slack connector is reachable. Connection recovery resumed delivery.
+All 205 source records are now posted; no queued or uncertain items remain.
+The menu+voice task has a Hilly reply with a WeChat server message-ID receipt.
+
+Exact proxy exit cause is UNKNOWN. No matching Application crash/hang event,
+resource/reboot event or contemporaneous WER report was found. Process-exit
+audit returned no events. The host did not reboot. Clash starts its core in
+sidecar mode; no matching installed Windows service was found. Do not present
+the log gap as proof of a particular crash, manual stop or failed proxy node.
+No proxy settings, services, startup settings or source code were changed.
+Metadata evidence: state/proxy-incident-20261112-0809/verification.json.
+
+Prior repair follow-up: user's resent voice at 18:22 UTC was uploaded as WAV,
+and the user reported recovery. The receive timeout fix does not prevent the
+separate upstream connector/proxy dependency from becoming unavailable.
+
+2026-11-12 02:18 Beijing - Receive diagnosis and polling deadline repair.
+User reported an unanswered 4-second WeChat voice; their screenshot shows
+the voice and its handset transcript, followed by their own hi?/test texts.
+At diagnosis, no inbound after 01:18 existed in the durable queue. Read-only
+getupdates using the current cursor returned zero messages after 18.444s;
+re-reading the saved 00:54 cursor returned nine already-known messages, with
+no new voice. Both raw responses are DPAPI encrypted in the incident backup.
+This establishes absence from the inspected API responses; it does not
+establish why the WeChat backend did not return that voice.
+
+Fixed a separate confirmed receive defect: the 15s client deadline could
+abort valid long-poll responses. The default is now 45s; a valid server hint
+can extend it with a 10s margin, capped at 120s. Health includes actual
+response/message counts, last response/message times, and timeout counts,
+so empty server responses and local timeouts can be distinguished.
+No message bodies, cursors or credentials appear in this public telemetry.
+Tencent protocol reference: https://github.com/Tencent/openclaw-weixin/blob/main/docs/protocol.md
+
+95 offline tests passed. Graceful restart through the existing scheduled task
+started PID 25784. Original boundaries, 189 requests and 292 reply receipts
+were preserved. The user's two new text messages reached Slack, each received
+one Hilly reply, and both replies have WeChat server message-ID receipts.
+No synthetic messages were sent. Voice-specific recovery/handset confirmation
+remains pending a user resend; do not claim that the absent voice was recovered.
+Backup and evidence: state/receive-incident-20261112-021404/.
+
+2026-11-12 - Pending files join the following text/voice task.
+Inbound standalone files/images/videos remain staged. On a following text or
+voice (including voice without a transcript), staged attachments are transferred
+into that task; source IDs remain as bundled records for deduplication and quotes.
+A single file plus text now shares with the text as its initial comment. Multiple
+attachments are still sequential shares because the managed connector only accepts
+one file per completion; the instruction accompanies the final share. This does
+not guarantee that Slack's assistant waits for all shares before responding.
+Explicitly quoted staged attachments join only an instruction with the same quote.
+Partial upload progress, retries and bundled ownership survive restart. Only the
+final share anchors the task topic and acknowledgement; earlier shares cannot
+move that topic during history polling. Slack-to-WeChat forwarding is unchanged.
+94 offline tests passed. Worker gracefully restarted from the existing scheduled
+task. Encrypted queue and source/tests/config backup:
+state/attachment-queue-backup-20261112-005239/.
+No synthetic live messages were sent; end-to-end handset behavior is unverified.
+2026-11-12 - Reliability repair (supersedes global uncertain-delivery stop behavior).
+A failed item is isolated; uncertain writes retain phase=sending and are never
+blindly replayed. Startup and unrelated jobs/replies continue. Explicit thread
+order and staged-file dependencies are preserved. The receive, outbound-send,
+Slack-poll and WeChat-return lanes run independently; synchronous state changes
+retain object identity so arrivals during a network wait cannot overwrite sends.
+
+Upload checkpoints (prepared/uploading/uploaded/sharing/shared) and file IDs are
+DPAPI encrypted. Pre-share failures back off with jitter (about 5s to 5min,
+respecting rate limits). A positive owner-DM receipt with the exact file ID can
+reconcile an uncertain share; filename/text guessing is not used automatically.
+RPC failures recreate the connector between operations, without replaying the
+failed write. Confirmation/identity failures block that connector until reviewed.
+
+Global HTTP connect timeout is 30s via pinned undici 7.30.2 (Node >=22.19.0);
+file transfer deadline remains 120s. Proxy/system routing was not changed.
+Metadata health snapshots are in state/health.json every 15s. Full RPC errors
+and recent connector stderr go only to state/connector-errors.dpapi (last 20).
+No raw remote text, signed URLs or credentials are written to public logs.
+The existing scheduled launcher now backs off and restarts nonzero worker exits.
+Graceful stop remains: create state/relay.stop; wait for worker/launcher exit.
+
+89 offline tests passed, covering isolation, concurrent arrivals, checkpoints,
+positive reconciliation, reconnection, permission blocking and no duplicate sends.
+Live read-only Slack identity/connector preflight passed. Legacy image recovery
+was checked against complete fixed-DM history (no matching image); its original
+queue is backed up before requeue. Final verification at 2026-11-12 00:09 Beijing: worker PID 14916 healthy;
+all 173 requests posted, 261 replies acknowledged by WeChat, no queued or
+uncertain items. The incident image and both voices each matched exactly one
+Slack message; voice files are WAV. All activation boundaries, original jobs
+and 258 previously sent reply receipts are preserved. Two fresh Hilly replies
+were acknowledged by WeChat after recovery, plus one downtime reply. Handset
+receipt was not independently observed. Evidence:
+state/incident-20261111/recovery-verification.json.
+During validation a cross-version HTTP dispatcher compatibility issue was caught;
+fetch and Agent now both use the same pinned Undici version, covered by a real
+loopback binary-upload test and the subsequent live image/voice transfers.
+Source/tests/scripts/manifests/queue/task backup:
+state/reliability-backup-20261111-235204/.
+
+2026-11-10 - All Hilly emoji reactions acknowledge with exactly "稍等".
+User requested the eyes, art, magnifier and every other emoji to share this
+wording. collectReactions now accepts any named reaction by the bound assistant.
+The existing persisted eyes_ack/eyesActiveFrom identifiers remain compatible:
+one acknowledgement per source message across changed emoji, removal/re-addition,
+polls and restarts. Existing actor/source matching, activation boundary and
+late acknowledgement suppression after a collected full reply remain in place.
+71 offline tests passed, including arbitrary/custom emoji and cross-emoji dedup.
+The scheduled worker was gracefully stopped and restarted (new PID 29164).
+Before restart: 159 requests posted, 236 outbox entries sent (22 acknowledgements),
+no queued or uncertain deliveries. Source/config/test and encrypted queue backup:
+state/reactions-backup-20261110-043319. No synthetic messages were sent.
+2026-11-08 - Native quotes and topic-aware thread routing.
+WeChat ref_msg is now retained separately from the message text. Exact message
+IDs (including uint64 IDs) or uniquely matching full quoted text resolve to the
+original Slack thread root. Both text and voice/file uploads pass thread_ts;
+quoting an AI reply continues its root thread instead of starting a new topic.
+Unresolved/ambiguous explicit quotes remain queued, exposed as unresolvedQuotes
+in --status; they are never silently posted as unrelated new root messages.
+
+The last visible WeChat message carries its thread topic through inbound user
+messages, Hilly eyes acknowledgements, text replies and media replies. Returning
+to a different topic adds native MessageItem.ref_msg; consecutive messages in
+the same topic omit it. Topic identity is the explicit Slack thread association,
+not a semantic classifier for unquoted new root messages. Outbound message IDs,
+reference text and the last visible topic persist in the DPAPI-encrypted queue.
+The poll also rotates through known old thread roots so late replies remain
+discoverable after their parents leave the ten-minute main-history window.
+
+70 tests passed, including interleaved topics, quotes of AI/user follow-ups,
+voice/file thread routing, native quote payloads, exact uint64 IDs, ambiguous
+mapping, restart persistence, acknowledgements and delayed old-thread replies.
+Read-only rebuild fetched 87 existing threads / 327 unique Slack messages and
+restored 228 references; no historical messages were replayed or synthetic
+messages sent. Old AI messages sent before this change have no cached WeChat
+server ID: inline full-text quotes can resolve them, ID-only quotes may remain
+unresolved. New send receipts retain server IDs when returned by WeChat.
+After restart, one new real threaded AI reply was accepted by WeChat and its
+server message ID was retained (180/180 outbox entries sent). Reconstructing
+the pre-send topic state confirms this reply took the native-quote path. Mobile
+UI rendering still awaits user observation; API acceptance is not a screenshot.
+
+Existing scheduled task restarted as PID 26976. Before restart: 111 requests
+posted, 179 outbox entries sent, no pending or uncertain deliveries. Activation
+boundaries, all previous jobs and sent receipts were checked unchanged.
+Backup: state/reply-backup-20261108 (source/tests/config, encrypted queue and
+encrypted read-only reference snapshot). scripts/rebuild-references.mjs is an
+explicit maintenance command; --apply requires the worker lock to be free.
+npm test now targets test/*.test.mjs, excluding archived tests under state/.
+Primary protocol reference:
+https://github.com/Tencent/openclaw-weixin/blob/main/src/api/types.ts
+
+2026-11-08 - Permanent project location (supersedes earlier location notes).
+Bridge now lives and runs at E:\NewProjects\PersonalAssistant\bridge.
+The original temporary bridge directory was moved, with all 430 files verified
+by SHA-256 before restart. Credentials, encrypted queue and dependencies retained.
+Existing scheduled task HillyWeixinSlackBridge uses the new working directory
+and new scripts\run-relay.ps1 path; existing logon/restart settings retained.
+Relay restarted as PID 14688; local setup server restarted as PID 12964.
+61 offline tests passed. Forwarding loop running, no pending or uncertain items,
+and no new relay errors at verification. No synthetic messages were sent.
+Future maintenance and starts must use this project copy, never the old temp path.
+Migration evidence: state\directory-migration-20261108\.
+
+2026-11-08 19:30 Beijing - WeChat voice now uploads as standard WAV.
+User requested common, AI-readable audio instead of SPX attachments. Two real
+Slack voice files named .spx were downloaded read-only and found to start with
+Tencent's SILK signature (02 23 21 53 49 4c 4b 5f 56 33). The WeChat enum had
+labeled them encode_type=4, so format detection now uses the actual bytes.
+
+src/voice-audio.mjs decodes SILK locally using pinned silk-wasm 3.7.1 and wraps
+the PCM in a mono, 24000 Hz, 16-bit WAV. Slack receives .wav and audio/wav;
+the protocol transcript remains the same file message's initial comment.
+Conversion is in memory. Existing WAV/MP3/Ogg remain common audio uploads;
+explicit 16-bit PCM gets a WAV header. Unsupported/corrupt audio is never merely
+renamed to WAV. Its transcript is sent once while audio remains retryable;
+later successful audio upload does not duplicate that transcript. Unknown send
+outcomes still stop for review. File-ID receipts and eyes acknowledgements remain.
+
+61 tests passed, covering real SILK codec round trips, valid waveform and timing,
+header/MIME correctness, malformed data, transcript fallback/restart dedup and
+the full pre-existing relay behavior. Two real samples independently parsed by
+Python wave after conversion: 3.8 seconds / 182444 WAV bytes, and 5.18 seconds /
+248684 WAV bytes. Source durations and decoded PCM lengths agreed.
+
+Scheduled task restarted gracefully as PID 28692 and entered its forwarding
+loop. At 11:30:46 UTC: 105/105 requests posted, 168/168 replies sent, no backlog,
+no uncertain deliveries. Earlier receipts and all activation boundaries were
+preserved. New live WAV upload awaits the next actual WeChat voice message;
+no synthetic message or historical-voice replay was sent. Existing Slack files
+are not rewritten. Backups and metadata verification: state/voice-backup-20261108/.
+The two diagnostic source samples are DPAPI encrypted there.
+
+Dependency is pinned in package.json/package-lock.json; node_modules is ignored.
+Restore/install with npm ci --ignore-scripts. No global codec was installed.
+Primary implementation references:
+https://github.com/Tencent/openclaw-weixin/blob/main/src/media/silk-transcode.ts
+https://github.com/idranme/silk-wasm
+
+2026-11-08 07:28 Beijing - Slack eyes reactions now acknowledge in WeChat.
+User requested: when Hilly adds the eyes reaction, send exactly "稍等，我看看" to
+WeChat. This is an explicit exception to native content-only forwarding below.
+The existing Slack history poll includes reaction names and user IDs. Only an
+eyes reaction by the bound assistant on a uniquely matched WeChat-origin owner
+message can create an acknowledgement. Text uses its posted Slack timestamp;
+voice/files retain Slack upload file IDs for matching. No filename/text guessing.
+
+Acknowledgements use the encrypted durable outbox with one entry per source
+WeChat message. Repeated polls, restart and reaction removal/re-addition do not
+resend it. Explicit WeChat rejections retry; ambiguous sends still require review.
+If an actual threaded reply was collected on an earlier poll, late eyes do not
+produce a stale acknowledgement. Same-poll eyes precede the full reply.
+Polling uses the existing five-second schedule and ten-minute overlap window.
+
+Feature boundary eyesActiveFrom=1794094079361 (2026-11-07 23:27:59.361 UTC),
+persisted across restarts. Historical inputs/reactions are not backfilled.
+All 55 tests passed. A live historical reaction payload was verified read-only
+against Hilly's actor ID and replayed through an in-memory, no-network sender;
+exactly one "我看看" was produced across a simulated restart. New worker PID
+29636 is running. A real new voice message after activation preserved its Slack
+file ID and received normal replies. A new live eyes acknowledgement has not
+yet been observed. Earlier requests, receipts and activation boundaries remain
+intact. Backups and verification: state/eyes-backup-20261108/.
+
+2026-11-07 14:40 Beijing - PDF/file return path repaired and backlog delivered.
+The screenshot's 06:26 UTC "send it" request reached Slack at 06:26:57;
+Hilly replied at 06:27:30 with the completed PDF. Both that reply and the earlier
+23:47 UTC PDF reply had been collected but were stuck before file preparation.
+This was a separate failure from the timestamp polling issue fixed below.
+
+Two defects blocked files: Slack's private download returned a 302 login
+redirect, which redirect:error mislabeled as transport_outcome_unknown and
+prevented connector fallback; the connector returned a signed binary download
+reference in structuredContent.file_uri, which readFileBytes did not support.
+The direct reader now recognizes redirects without following them. The fallback
+accepts the requested file's managed HTTPS oaiusercontent download reference,
+fetches without authentication headers, rejects redirects/HTML/oversize data,
+and retains Relay's exact expected-file-size check. No credential changes.
+
+Accompanying text is now independently checkpointed and delivered before media
+preparation, so an unavailable attachment cannot silence the whole reply. A
+retry/restart preserves textSent and sentItems; ambiguous sends still stop.
+Preparation error codes are now saved safely in lastDeliveryError, and one
+retryable file failure does not stop other replies in the same pass.
+
+47 offline tests passed, including signed-download validation, redirect handling,
+partial delivery/restart deduplication and ambiguous-send protection. Read-only
+live downloads verified both PDFs as 396012 bytes with identical SHA-256:
+ff164cd8a9f7d5fcdaca6717428b2d75e46ea48e9bf553e8567ead21c1ddfa92
+The old queued PNG also downloaded with its exact expected size (1596768 bytes).
+
+Graceful scheduled-task restart completed; new worker PID 17880. At 06:40:32 UTC,
+all three previously pending entries (two PDF replies and the old PNG reply)
+were fully acknowledged by Weixin, including their text and actual attachments.
+Current totals: 41/41 incoming requests posted; 96/96 replies sent; zero pending.
+All earlier 93 sent receipts/timestamps, original requests and activation
+boundaries remained intact. No synthetic messages were sent. Handset rendering
+has not been observed. Backups and metadata-only live verification are under
+state/attachment-backup-20261107/. The older pending-file notes below are resolved.
+
+2026-11-07 - Silent Slack polling stall repaired.
+Incident boundary: 2026-11-06 20:59:48 Beijing (12:59:48 UTC). All 38 WeChat
+requests, including the screenshot's voice messages, had reached Slack. Hilly
+had replied, but the poll watermark stopped advancing and 13 replies were missed.
+Root cause reproduced with read-only calls to the actual Slack API: oldest
+1793969388.5969388 returned zero messages; 1793969388.596939 and 1793969388
+returned the expected messages. Number(ts)*1000 followed by /1000 introduced
+an over-precise floating-point timestamp. The API returned an empty page without
+an error, so the existing retry and scheduled-task restart logic did not help.
+
+src/relay-loop.mjs now rounds the query lower bound DOWN to whole seconds.
+The existing 10-minute overlap, activation boundary and exact-ts dedup remain.
+Regression coverage reproduces the bad timestamp and checks recovery, boundary
+inclusion and no duplicate delivery after restart. All 41 offline tests pass.
+Weixin application errors now preserve only a numeric remoteCode; explicitly
+rejected outbox entries retain lastDeliveryError (code/time/numeric code only).
+Successful delivery clears this metadata. Remote error text is never persisted.
+
+Resident task restarted gracefully, final worker PID 20172. All 13 missing replies
+were collected; 10 received successful Weixin send acknowledgements. Three text
+replies remain queued with explicit Weixin ret=-2 rejections. This is consistent
+with exhausting the 10-message context allowance reported in Tencent issue #202:
+https://github.com/Tencent/openclaw-weixin/issues/202
+The backend code alone does not prove the rejection reason. User was asked to
+send a fresh WeChat message; existing retry logic immediately retries queued
+replies when that message refreshes the context. Handset receipt not yet observed.
+The separate, pre-existing image F0CFABKC525 remains queued as before this repair.
+
+All activation boundaries, all 38 original request records and all 63 previously
+sent reply receipts/timestamps were preserved. No synthetic messages were sent.
+Backups and metadata-only verification: state/polling-backup-20261107/.
+Do not reset the watermark to now: it would discard the missed reply window.
+
+2026-11-06 - WeChat display formatting repair (supersedes "as-is" for Slack formatting).
+Slack's top-level text in the live DM is flattened (zero newline characters),
+while blocks.rich_text retains the paragraphs, lists, styles and labelled links.
+src/slack-text.mjs now renders the display blocks into Weixin plain text before
+queueing: paragraphs, bullet/ordered lists, indentation, quotes and code survive;
+labelled links become numbered references with exact URLs at the end. Plain-text
+fallback converts Slack link syntax/entities and emphasis. Unsupported blocks use
+the complete text fallback. WeChat -> Slack content/routing is unchanged.
+39 offline tests passed, including persisted queue/restart/dedup and multiline
+Weixin JSON payload checks. Read-only validation of 20 live assistant messages
+preserved every rich text leaf and URL; the screenshot hotel reply went from zero
+newlines in fallback text to eight in the rendered output. Metadata only is saved
+in formatting-verification.json. No synthetic messages were transmitted.
+Source/config backups: state/formatting-backup-20261106/*.bak.
+Resident task restarted gracefully; new worker PID 25016 completed startup and
+polling without new errors. Verified all 15 jobs and 28 outbox entries retained
+their IDs/statuses and activation boundaries; the one pre-existing queued image
+remains queued. No messages were replayed. Handset display is not yet observed.
+Previously sent messages retain their old appearance; new collections use this
+formatter. Existing queued entries keep their persisted payload.
+
+2026-11-06 - Voice messages no longer wait for a later typed message.
+Their WeChat protocol transcript is treated as the message text, and audio
+plus transcript now share one Slack file message. Document/image/video-only
+messages retain staged behavior.
+The Slack upload-start response parser now accepts the live labelled result
+format; safe pre-share upload failures requeue instead of stranding a job.
+
+2026-11-05 - User selected native restore after the stopped routing repair.
+The repair in ROUTING-REPAIR.txt is superseded for routing/context behavior:
+all new assistant DM messages return as-is using the latest WeChat context;
+explicit WeChat rejections requeue. The repair's actual-binary file checks are
+retained. Slack collection boundary was reset at restart to avoid downtime
+history backfill, while the WeChat cursor was preserved.
+
+2026-11-04 - Native relay + files + resident task (supersedes everything below).
+Text and files forward as-is in both directions (WeChat -> Slack via connector
+file upload; Slack -> WeChat via Weixin CDN AES upload). No wrapper text, no
+reply mapping: the assistant's new DM messages return immediately; owner Slack
+typing does not mirror to WeChat. Only WeChat-origin file-only messages are
+staged untouched until a WeChat text releases them (one file per message).
+Slack replies hold queued until a WeChat inbound provides a context_token.
+Resident: scheduled task
+HillyWeixinSlackBridge (AtLogOn, auto-restart) running scripts/run-relay.ps1.
+Incident on first resident start: Slack collection backfilled 13 historical
+assistant messages since activeFrom; 9 reached WeChat before one send failed.
+Fixed with slackActiveFrom=now boundary and outbox reset, regression-tested;
+re-enabled and verified running with an empty outbox after a full poll cycle.
+Graceful stop: create state/relay.stop, then stop/disable the scheduled task.
+
+2026-11-04 - Content review removed by user decision (supersedes all review notes below).
+Regex restricted-content gate, manual ordinary review (scripts/review-ordinary.mjs,
+ordinary-reviews store) and blocked notices are deleted. src/relay.mjs queues the
+bound user's new text and uniquely mapped replies directly; queue file renamed to
+state/relay-queue.dpapi. Identity/source routing filters unchanged. Below is history.
+
+2026-11-04 - Direct text authorization applied; worker restarted as PID 30424.
+
+LATEST UPDATE (supersedes the earlier review-only notes below): the user explicitly
+removed the broad sensitive-information/ordinary-content pre-review requirement.
+relay-runtime.json now has directTextAuthorized=true. New bound-user text and its
+uniquely mapped hilly reply are automatically eligible, without per-message review.
+The local restricted-content gate still holds suspected national/social-insurance
+identifiers, payment-card numbers, credentials and secrets. Long numeric strings
+or secret-like strings may be held conservatively; these are not sent automatically.
+Blocked messages receive a fixed notice in their original WeChat conversation,
+without echoing the blocked content. Any sensitive one-off approval must be handled
+as a separate explicit action, not by labeling it ordinary.
+
+36 offline tests passed. The existing real read-only connector preflight passed.
+The new worker was started after checking the old worker and its own child process,
+preserving the encrypted queue/cursor. Before restart: zero queued/new requests,
+zero sends, zero replies, zero uncertain outcomes. No new synthetic test was sent.
+New real automatic round trip remains to be observed from a fresh WeChat message.
+Logs for the current process: relay-direct-output.log / relay-direct-error.log.
+Files remain excluded. No boot-time startup or security-setting changes.
+
+Graceful stop for this new version: create state/relay.stop, wait for process exit,
+then remove that exact stop file before restarting. Do not delete queue/credentials.
+Only incoming text after persisted activation boundary 1793802976839 is eligible.
+
+HISTORICAL REVIEW-ONLY UPDATE:
+
+UPDATE: src/connector.mjs and src/connector-main.mjs implement the real App Server
+connector and receive/reply loop. 33 offline tests and real read-only startup checks
+passed. Hidden node process 12076 was launched at 22:36:16 Beijing, using --forward.
+This worker sends only exact-content ordinary reviews; all unseen requests and
+replies remain in local encrypted review. No automatic privacy classifier exists.
+This is not unrestricted everyday automatic forwarding. Media remains excluded.
+
+Current state: state/reviewed-queue.dpapi; reviews: state/ordinary-reviews.dpapi.
+Logs: relay-output.log and relay-error.log (counts/errors only, no private text).
+Status: node src/connector-main.mjs --status
+List pending: node scripts/review-ordinary.mjs list
+Inspect one locally: node scripts/review-ordinary.mjs show MESSAGE_ID
+Only after actually reviewing exact content as ordinary:
+  node scripts/review-ordinary.mjs approve-ordinary MESSAGE_ID SHA256 [REPLY_TS]
+Do not approve sensitive/uncertain text through the ordinary-review command.
+Such content requires separate specific user consent and a reviewed action.
+
+No startup task or service installation; computer and process must stay online.
+No new synthetic messages or real file transfers were performed in this update.
+The notes below describe the earlier pre-launch state and are superseded above.
+
+The completed real one-message round trip is recorded in encrypted
+state/weixin-bounded-test.dpapi. No always-on bridge was resumed.
+
+src/clients.mjs now preserves WeChat uint64 message IDs exactly.
+src/reviewed-relay.mjs supplies persistent source filtering, exact-content
+review gates, deduplication, source-labeled requests, and isolated reply mapping.
+It is a component tested offline, not a deployed runner or automatic classifier.
+All new requests and replies start in review. No runtime is connected to its
+review methods. Sensitive or uncertain content must not be approved under the
+ordinary-text authorization. Separate specific consent is required.
+
+29 offline tests passed, including large-ID regression and reviewed relay tests.
+
+Current blocker for unattended ordinary-text forwarding: no validated local
+semantic review mechanism is connected to distinguish ordinary from sensitive
+or uncertain content in either direction. This is an implementation gap, not
+a fresh tool denial and not missing user authorization for ordinary text.
+Do not replace this gate with a keyword-only allow decision or enable the old
+unreviewed main.mjs runner. A live connector adapter/receive loop and operational
+monitoring also remain to be integrated after that gate is settled.
+
+Media capability inspection is in media-capabilities.json. No file forwarding
+was attempted or enabled. Upstream APIs cover images/files/video, but file-size,
+binary-reference transfer, source mapping and per-file content review still
+need concrete validation. A Slack file link alone is not original file bytes.
+

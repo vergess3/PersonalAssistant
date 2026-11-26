@@ -1,0 +1,16 @@
+{
+  "display_information": {
+    "name": "Hilly Weixin Bridge",
+    "description": "Relay a single approved Weixin conversation to the existing Hilly assistant DM"
+  },
+  "oauth_config": {
+    "scopes": {
+      "user": [
+        "chat:write",
+        "im:history",
+        "files:read",
+        "files:write"
+      ]
+    }
+  }
+}

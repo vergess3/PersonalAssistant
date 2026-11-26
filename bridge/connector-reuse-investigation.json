@@ -1,0 +1,34 @@
+{
+  "checkedAt": "2026-11-04",
+  "scope": "read-only connector reuse investigation",
+  "codexVersion": "0.155.0-alpha.16",
+  "officialInterface": "codex app-server JSON-RPC over stdio",
+  "accountType": "chatgpt",
+  "slack": {
+    "appId": "asdk_app_69a1d78e929881919bba0dbda1f6436d",
+    "runtimeName": "Slack",
+    "enabled": true,
+    "callable": true,
+    "mcpServer": "codex_apps",
+    "readTool": "slack.slack_read_thread"
+  },
+  "probe": {
+    "ephemeralContext": true,
+    "modelTurnStarted": false,
+    "method": "mcpServer/tool/call",
+    "channel": "D0CEB1J8G07",
+    "thread": "1793784946.032539",
+    "isError": false,
+    "expectedTestPresent": true,
+    "expectedAssistantPresent": true
+  },
+  "credentialsExtracted": false,
+  "credentialsCreated": false,
+  "slackWrites": 0,
+  "bridgeResumed": false,
+  "sendPathVerified": false,
+  "documentation": "https://learn.chatgpt.com/docs/app-server",
+  "nextImplementation": "Do not implement or test connector forwarding as a workaround for app-origin non-response. First obtain official support for the external relay and its provenance/requester semantics. app/installed callable=true and a successful read do not establish write authorization or acceptance by the receiving dot.",
+  "applicabilityStatus": "Read-only custom-client access verified. Explicit support for an independent Weixin-to-existing-dot relay, with receiver-verifiable external provenance, has not been established.",
+  "writeAuthorizationTested": false
+}

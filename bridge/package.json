@@ -1,0 +1,21 @@
+{
+  "name": "hilly-weixin-slack-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "check": "node src/connector-main.mjs --status",
+    "start": "node src/connector-main.mjs --forward",
+    "relay:check": "node src/connector-main.mjs --check",
+    "relay:receive": "node src/connector-main.mjs --receive",
+    "relay:status": "node src/connector-main.mjs --status"
+  },
+  "dependencies": {
+    "silk-wasm": "3.7.1",
+    "undici": "7.30.2"
+  }
+}

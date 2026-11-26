@@ -1,0 +1,47 @@
+{
+  "checkedAtUTC": "2026-11-04T11:28:00Z",
+  "slackAppId": "A0CEMNN3T53",
+  "slackInstalled": true,
+  "credentialStorage": "Windows DPAPI CurrentUser",
+  "approvedScopes": [
+    "chat:write",
+    "im:history"
+  ],
+  "automaticallyIncludedScope": "identify",
+  "weixinBound": true,
+  "bridgeProcessId": null,
+  "setupProcessId": 6828,
+  "bridgeActiveFromUTC": "2026-11-04T10:48:07.261Z",
+  "endToEndVerified": false,
+  "standaloneTest": {
+    "thread": "1793789274.377889",
+    "sent": true,
+    "replied": false,
+    "hasBotId": true
+  },
+  "originalConnectorTest": {
+    "thread": "1793784946.032539",
+    "replied": true,
+    "hasBotId": false
+  },
+  "nextDiagnostic": {
+    "status": "Cancelled. Additional send was denied before execution; latest instruction prohibits origin disguise and further tests."
+  },
+  "queueJobs": 0,
+  "bridgeState": "paused; process 11456 confirmed absent",
+  "alternativesResearch": "Official dot contacts: ChatGPT, Slack, Teams. Workspace Agents trigger API does not return answer content; applicability to this dot unverified. Separate Agents API/OpenClaw assistant possible but not the existing Hilly dot.",
+  "repairResult": "Startup now requires verified standalone Slack trigger before private forwarding. 23 local tests pass. Exact Hilly trigger failure remains server-side/unobservable; no new message sent.",
+  "threadDiagnostic": {
+    "phase": "posted",
+    "thread": "1793789274.377889",
+    "channel": "D0CEB1J8G07",
+    "marker": "BRIDGE-THREAD-4938",
+    "startedAtUTC": "2026-11-04T11:26:47.943Z",
+    "ts": "1793791608.542209",
+    "bot_id": "B0CELRL40R1",
+    "app_id": "A0CEMNN3T53",
+    "checkedAtUTC": "2026-11-04T11:28:00Z",
+    "assistantReplyObserved": false,
+    "threadReplyCount": 1
+  }
+}

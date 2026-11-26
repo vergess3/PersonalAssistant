@@ -1,0 +1,137 @@
+{
+  "checkedAt": "2026-11-05T18:19:30.384Z",
+  "readOnly": true,
+  "liveMessagesSent": 0,
+  "testsPassed": 39,
+  "assistantMessagesChecked": 20,
+  "checks": [
+    {
+      "ts": "1793897270.366769",
+      "sourceNewlines": 0,
+      "renderedNewlines": 5,
+      "contentPreserved": true
+    },
+    {
+      "ts": "1793897137.955309",
+      "sourceNewlines": 0,
+      "renderedNewlines": 10,
+      "contentPreserved": true
+    },
+    {
+      "ts": "1793896606.567239",
+      "sourceNewlines": 0,
+      "renderedNewlines": 0,
+      "contentPreserved": true
+    },
+    {
+      "ts": "1793896402.448849",
+      "sourceNewlines": 0,
+      "renderedNewlines": 0,
+      "contentPreserved": true
+    },
+    {
+      "ts": "1793896242.727219",
+      "sourceNewlines": 0,
+      "renderedNewlines": 2,
+      "contentPreserved": true
+    },
+    {
+      "ts": "1793896195.045829",
+      "sourceNewlines": 0,
+      "renderedNewlines": 0,
+      "contentPreserved": true
+    },
+    {
+      "ts": "1793896089.938879",
+      "sourceNewlines": 0,
+      "renderedNewlines": 8,
+      "contentPreserved": true
+    },
+    {
+      "ts": "1793896036.191209",
+      "sourceNewlines": 0,
+      "renderedNewlines": 9,
+      "contentPreserved": true
+    },
+    {
+      "ts": "1793896028.873709",
+      "sourceNewlines": 0,
+      "renderedNewlines": 27,
+      "contentPreserved": true
+    },
+    {
+      "ts": "1793896011.153779",
+      "sourceNewlines": 0,
+      "renderedNewlines": 0,
+      "contentPreserved": true
+    },
+    {
+      "ts": "1793895981.286299",
+      "sourceNewlines": 0,
+      "renderedNewlines": 0,
+      "contentPreserved": true
+    },
+    {
+      "ts": "1793895956.938989",
+      "sourceNewlines": 0,
+      "renderedNewlines": 0,
+      "contentPreserved": true
+    },
+    {
+      "ts": "1793895953.248919",
+      "sourceNewlines": 0,
+      "renderedNewlines": 0,
+      "contentPreserved": true
+    },
+    {
+      "ts": "1793895916.504439",
+      "sourceNewlines": 0,
+      "renderedNewlines": 2,
+      "contentPreserved": true
+    },
+    {
+      "ts": "1793895871.079899",
+      "sourceNewlines": 0,
+      "renderedNewlines": 0,
+      "contentPreserved": true
+    },
+    {
+      "ts": "1793895843.506219",
+      "sourceNewlines": 0,
+      "renderedNewlines": 0,
+      "contentPreserved": true
+    },
+    {
+      "ts": "1793895827.925509",
+      "sourceNewlines": 0,
+      "renderedNewlines": 5,
+      "contentPreserved": true
+    },
+    {
+      "ts": "1793895777.271339",
+      "sourceNewlines": 0,
+      "renderedNewlines": 0,
+      "contentPreserved": true
+    },
+    {
+      "ts": "1793895762.519459",
+      "sourceNewlines": 0,
+      "renderedNewlines": 0,
+      "contentPreserved": true
+    },
+    {
+      "ts": "1793895754.074539",
+      "sourceNewlines": 0,
+      "renderedNewlines": 0,
+      "contentPreserved": true
+    }
+  ],
+  "deployment": {
+    "verifiedAt": "2026-11-05T18:21:28.182Z",
+    "workerPid": 25016,
+    "queuePreserved": true,
+    "startupPollCompleted": true,
+    "newStartupErrors": false,
+    "liveHandsetDisplayVerified": false
+  }
+}

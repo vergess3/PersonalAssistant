@@ -1,0 +1,39 @@
+Routing/file-byte repair, 2026-11-04 UTC
+
+STATUS: STOPPED. Do not restart without a separate authorized live validation.
+The verified relay PID 6960, launcher PID 30412 and dedicated App Server child
+were stopped. state/relay.stop remains present; forwardingEnabled and
+receiveLoopEnabled are false. The launcher and entry point check the stop flag.
+No credentials, historical queue or real messages were modified during repair.
+
+Routing:
+- New WeChat requests record a routing version and the Slack post receipt.
+- Read only those Slack threads; require the original root to be the configured
+  Slack owner and the reply author to be the configured assistant.
+- Return only explicit thread replies using that request's original WeChat context.
+- Main-timeline answers, other threads, and answers after a manual follow-up in
+  the same thread are not forwarded. No semantic/content matching or screening.
+- Migration to queue version 4 preserves old records but holds unmapped pending
+  work; old roots are not adopted. Migration has NOT run on the real queue.
+- Ambiguous delivery remains stopped rather than being resent automatically.
+
+File bytes:
+- Direct downloads retain raw bytes and validate available size metadata.
+- Connector fallback accepts one explicit MCP binary image/resource block only,
+  with canonical base64 validation. Text, JSON descriptions and opaque file
+  references are never converted into attachment bytes.
+- Missing/invalid bytes leave the corresponding item queued, without delivery.
+
+Validation: node --test, all 30 offline tests passed. Synthetic RPC, HTTP and
+media only; DPAPI test uses temporary synthetic data. No actual Slack or WeChat
+message was sent, and no live message body was viewed.
+
+Outstanding live prerequisites:
+- Verify hilly returns thread_ts for a WeChat-origin post. Earlier examples
+  included main-timeline replies; those cannot be safely correlated unchanged.
+- Validate original binary-byte retrieval and one permitted file round trip.
+- File-only inbound messages retain existing staging behavior: a subsequent
+  WeChat text releases them. Standalone answers to the upload's own root have
+  no recorded request root and are not forwarded.
+- Credentials and existing encrypted queue remain in place. Do not infer
+  delivery to the phone from an API success record alone.
